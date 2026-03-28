@@ -26,6 +26,9 @@ public class Circle {
     public float glowIntensity     = 0f; //Effects for merging
     public int popCountdown        = -1;
     public boolean isSpawning      = false; //For spawning logic (No toroidal wrapping when first spawning).
+    public double pendingVelocityX = 0;
+    public double pendingVelocityY = 0;
+    public double pendingMass      = 0;
 
     public boolean isSplinter;
     public Color color; //Color of the circle.
@@ -167,8 +170,19 @@ public class Circle {
         totalMass    = survivorMass + consumedMass;
 
         //This will make sure that the velocity of both objects is added (or subtracted) proportional to their mass to conserved momentum.
-        survivor.velocityX = (circleA.velocityX * survivorMass + circleB.velocityX * consumedMass) / totalMass;
-        survivor.velocityY = (circleA.velocityY * survivorMass + circleB.velocityY * consumedMass) / totalMass;
+//        survivor.velocityX = (circleA.velocityX * survivorMass + circleB.velocityX * consumedMass) / totalMass;
+//        survivor.velocityY = (circleA.velocityY * survivorMass + circleB.velocityY * consumedMass) / totalMass;
+        if (survivor.pendingMass == 0) {
+
+            survivor.pendingVelocityX = survivor.velocityX * survivorMass;
+            survivor.pendingVelocityY = survivor.velocityY * survivorMass;
+            survivor.pendingMass      = survivorMass;
+
+        }
+
+        survivor.pendingVelocityX += consumed.velocityX * consumedMass;
+        survivor.pendingVelocityY += consumed.velocityY * consumedMass;
+        survivor.pendingMass      += consumedMass;
 
         //Color blending function.
         colorWeight    = consumedMass / totalMass;
