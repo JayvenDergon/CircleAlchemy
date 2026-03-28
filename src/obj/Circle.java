@@ -36,12 +36,12 @@ public class Circle {
     //Constructor
     public Circle(double posX, double posY, double radius, double velocityX, double velocityY, Color color, boolean isSplinter) {
 
-        this.posX = posX;
-        this.posY = posY;
-        this.radius = radius;
-        this.velocityX = velocityX;
-        this.velocityY = velocityY;
-        this.color = color;
+        this.posX       = posX;
+        this.posY       = posY;
+        this.radius     = radius;
+        this.velocityX  = velocityX;
+        this.velocityY  = velocityY;
+        this.color      = color;
         this.isSplinter = isSplinter;
 
     }
@@ -128,12 +128,12 @@ public class Circle {
 
         if (c.glowIntensity > 0.01) {
 
-            float glowRadius = (float) c.radius * 2.5f;
+            float glowRadius = (float) c.radius * 1.5f;
             g2.setPaint(new RadialGradientPaint(0, 0, glowRadius,
                     new float[]{ 0f, 0.5f, 1f },
                     new Color[]{
-                            new Color(255, 255, 255, (int) (60 * c.glowIntensity)),
-                            new Color(c.color.getRed(), c.color.getGreen(), c.color.getBlue(), (int) (30 * c.glowIntensity)),
+                            new Color(255, 255, 255, (int) (160 * c.glowIntensity)),
+                            new Color(c.color.getRed(), c.color.getGreen(), c.color.getBlue(), (int) (80 * c.glowIntensity)),
                             new Color(0, 0, 0, 0)
                     }));
 
@@ -170,8 +170,6 @@ public class Circle {
         totalMass    = survivorMass + consumedMass;
 
         //This will make sure that the velocity of both objects is added (or subtracted) proportional to their mass to conserved momentum.
-//        survivor.velocityX = (circleA.velocityX * survivorMass + circleB.velocityX * consumedMass) / totalMass;
-//        survivor.velocityY = (circleA.velocityY * survivorMass + circleB.velocityY * consumedMass) / totalMass;
         if (survivor.pendingMass == 0) {
 
             survivor.pendingVelocityX = survivor.velocityX * survivorMass;
@@ -193,7 +191,7 @@ public class Circle {
         stretchAmount        = (consumedMass / totalMass) / 0.5;
         survivor.morphScaleX = 1.0 + stretchAmount;
         survivor.morphScaleY = 1.0 - (stretchAmount * 0.4);
-        survivor.glowIntensity = 0.5f;
+        survivor.glowIntensity = 0.75f;
 
         //Get new radius.
         survivor.radius = Math.sqrt(totalMass);

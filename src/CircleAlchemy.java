@@ -177,7 +177,7 @@ static class CircleAlchemy extends JPanel {
             circle.morphScaleY += (1.0 - circle.morphScaleY) * 0.1;
 
             //Same but with a glow.
-            circle.glowIntensity *= 0.9f;
+            circle.glowIntensity *= 0.98f;
 
         }
 
