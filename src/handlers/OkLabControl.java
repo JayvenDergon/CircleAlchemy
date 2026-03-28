@@ -34,4 +34,31 @@ public class OkLabControl {
 
     }
 
+    public static double[] rgbToOklab(Color c) {
+
+        // Linearize (undo gamma)
+        double r = undoGamma(c.getRed() / 255.0);
+        double g = undoGamma(c.getGreen() / 255.0);
+        double b = undoGamma(c.getBlue() / 255.0);
+
+        // Linear RGB → LMS
+        double lCone = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+        double mCone = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+        double sCone = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+
+        // LMS → OKLab
+        double L = 0.2104542553 * lCone + 0.7936177850 * mCone - 0.0040720468 * sCone;
+        double A = 1.9779984951 * lCone - 2.4285922050 * mCone + 0.4505937099 * sCone;
+        double B = 0.0259040371 * lCone + 0.7827717662 * mCone - 0.8086757660 * sCone;
+
+        return new double[]{L, A, B, 200};
+
+    }
+
+    private static double undoGamma(double v) {
+
+        return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+
+    }
 }
+

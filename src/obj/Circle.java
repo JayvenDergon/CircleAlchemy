@@ -1,5 +1,7 @@
 package obj;
 
+import handlers.OkLabControl;
+
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
@@ -206,11 +208,14 @@ public class Circle {
      */
     public static Color blendColors(Color colorA, Color colorB, double weight) {
 
-        int r = (int) Math.max((colorA.getRed()   * (1 - weight) + colorB.getRed()   * weight), 60);
-        int g = (int) Math.max((colorA.getGreen() * (1 - weight) + colorB.getGreen() * weight), 60);
-        int b = (int) Math.max((colorA.getBlue()  * (1 - weight) + colorB.getBlue()  * weight), 60);
+        double[] labA = OkLabControl.rgbToOklab(colorA);
+        double[] labB = OkLabControl.rgbToOklab(colorB);
 
-        return new Color(r, g, b);
+        double l = labA[0] * (1 - weight) + labB[0] * weight;
+        double a = labA[1] * (1 - weight) + labB[1] * weight;
+        double b = labA[2] * (1 - weight) + labB[2] * weight;
+
+        return OkLabControl.oklabToRgb(l, a, b);
 
     }
 
