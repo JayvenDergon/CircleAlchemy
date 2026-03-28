@@ -206,13 +206,9 @@ public class Circle {
      */
     public static Color blendColors(Color colorA, Color colorB, double weight) {
 
-        int r = (int) (colorA.getRed()   * (1 - weight) + colorB.getRed()   * weight);
-        int g = (int) (colorA.getGreen() * (1 - weight) + colorB.getGreen() * weight);
-        int b = (int) (colorA.getBlue()  * (1 - weight) + colorB.getBlue()  * weight);
-
-        if (r > 200) r = 200;
-        if (g > 200) g = 200;
-        if (b > 200) b = 200;
+        int r = (int) Math.max((colorA.getRed()   * (1 - weight) + colorB.getRed()   * weight), 60);
+        int g = (int) Math.max((colorA.getGreen() * (1 - weight) + colorB.getGreen() * weight), 60);
+        int b = (int) Math.max((colorA.getBlue()  * (1 - weight) + colorB.getBlue()  * weight), 60);
 
         return new Color(r, g, b);
 
