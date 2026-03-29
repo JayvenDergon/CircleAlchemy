@@ -31,6 +31,7 @@ public class Circle {
     public double pendingVelocityX = 0;
     public double pendingVelocityY = 0;
     public double pendingMass      = 0;
+    public double baseMass         = 0;
 
     public boolean isSplinter;
     public Color color; //Color of the circle.
@@ -174,6 +175,7 @@ public class Circle {
         //This will make sure that the velocity of both objects is added (or subtracted) proportional to their mass to conserved momentum.
         if (survivor.pendingMass == 0) {
 
+            if (survivor.baseMass < 0) survivor.baseMass = survivor.radius * survivor.radius;
             survivor.pendingVelocityX = survivor.velocityX * survivorMass;
             survivor.pendingVelocityY = survivor.velocityY * survivorMass;
             survivor.pendingMass      = survivorMass;
@@ -193,7 +195,7 @@ public class Circle {
         stretchAmount        = (consumedMass / totalMass) / 0.5;
         survivor.morphScaleX = 1.0 + stretchAmount;
         survivor.morphScaleY = 1.0 - (stretchAmount * 0.4);
-        survivor.glowIntensity = 0.75f;
+        survivor.glowIntensity = (float) Math.min(1.0, (consumedMass / survivorMass) + 0.5);
 
         //Get new radius.
         survivor.radius = Math.sqrt(totalMass);
