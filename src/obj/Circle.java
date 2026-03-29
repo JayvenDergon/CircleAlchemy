@@ -1,5 +1,7 @@
 package obj;
 
+import handlers.OkLabControl;
+
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
@@ -26,6 +28,9 @@ public class Circle {
     public float glowIntensity     = 0f; //Effects for merging
     public int popCountdown        = -1;
     public boolean isSpawning      = false; //For spawning logic (No toroidal wrapping when first spawning).
+    public double pendingVelocityX = 0;
+    public double pendingVelocityY = 0;
+    public double pendingMass      = 0;
 
     public boolean isSplinter;
     public Color color; //Color of the circle.
@@ -33,12 +38,12 @@ public class Circle {
     //Constructor
     public Circle(double posX, double posY, double radius, double velocityX, double velocityY, Color color, boolean isSplinter) {
 
-        this.posX = posX;
-        this.posY = posY;
-        this.radius = radius;
-        this.velocityX = velocityX;
-        this.velocityY = velocityY;
-        this.color = color;
+        this.posX       = posX;
+        this.posY       = posY;
+        this.radius     = radius;
+        this.velocityX  = velocityX;
+        this.velocityY  = velocityY;
+        this.color      = color;
         this.isSplinter = isSplinter;
 
     }
@@ -125,12 +130,12 @@ public class Circle {
 
         if (c.glowIntensity > 0.01) {
 
-            float glowRadius = (float) c.radius * 2.5f;
+            float glowRadius = (float) c.radius * 1.5f;
             g2.setPaint(new RadialGradientPaint(0, 0, glowRadius,
                     new float[]{ 0f, 0.5f, 1f },
                     new Color[]{
-                            new Color(255, 255, 255, (int) (60 * c.glowIntensity)),
-                            new Color(c.color.getRed(), c.color.getGreen(), c.color.getBlue(), (int) (30 * c.glowIntensity)),
+                            new Color(255, 255, 255, (int) (160 * c.glowIntensity)),
+                            new Color(c.color.getRed(), c.color.getGreen(), c.color.getBlue(), (int) (80 * c.glowIntensity)),
                             new Color(0, 0, 0, 0)
                     }));
 
@@ -167,8 +172,17 @@ public class Circle {
         totalMass    = survivorMass + consumedMass;
 
         //This will make sure that the velocity of both objects is added (or subtracted) proportional to their mass to conserved momentum.
-        survivor.velocityX = (circleA.velocityX * survivorMass + circleB.velocityX * consumedMass) / totalMass;
-        survivor.velocityY = (circleA.velocityY * survivorMass + circleB.velocityY * consumedMass) / totalMass;
+        if (survivor.pendingMass == 0) {
+
+            survivor.pendingVelocityX = survivor.velocityX * survivorMass;
+            survivor.pendingVelocityY = survivor.velocityY * survivorMass;
+            survivor.pendingMass      = survivorMass;
+
+        }
+
+        survivor.pendingVelocityX += consumed.velocityX * consumedMass;
+        survivor.pendingVelocityY += consumed.velocityY * consumedMass;
+        survivor.pendingMass      += consumedMass;
 
         //Color blending function.
         colorWeight    = consumedMass / totalMass;
@@ -179,7 +193,7 @@ public class Circle {
         stretchAmount        = (consumedMass / totalMass) / 0.5;
         survivor.morphScaleX = 1.0 + stretchAmount;
         survivor.morphScaleY = 1.0 - (stretchAmount * 0.4);
-        survivor.glowIntensity = 0.5f;
+        survivor.glowIntensity = 0.75f;
 
         //Get new radius.
         survivor.radius = Math.sqrt(totalMass);
@@ -194,15 +208,14 @@ public class Circle {
      */
     public static Color blendColors(Color colorA, Color colorB, double weight) {
 
-        int r = (int) (colorA.getRed()   * (1 - weight) + colorB.getRed()   * weight);
-        int g = (int) (colorA.getGreen() * (1 - weight) + colorB.getGreen() * weight);
-        int b = (int) (colorA.getBlue()  * (1 - weight) + colorB.getBlue()  * weight);
+        double[] labA = OkLabControl.rgbToOklab(colorA);
+        double[] labB = OkLabControl.rgbToOklab(colorB);
 
-        if (r > 200) r = 200;
-        if (g > 200) g = 200;
-        if (b > 200) b = 200;
+        double l = labA[0] * (1 - weight) + labB[0] * weight;
+        double a = labA[1] * (1 - weight) + labB[1] * weight;
+        double b = labA[2] * (1 - weight) + labB[2] * weight;
 
-        return new Color(r, g, b);
+        return OkLabControl.oklabToRgb(l, a, b);
 
     }
 

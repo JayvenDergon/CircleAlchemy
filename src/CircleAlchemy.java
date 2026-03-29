@@ -14,7 +14,7 @@ import static obj.Triangle.drawTriangle;
 /**
  * Balls
  * @author Feathers
- * @version 1.0
+ * @version 1.0.1
  */
 
 static class CircleAlchemy extends JPanel {
@@ -131,6 +131,18 @@ static class CircleAlchemy extends JPanel {
 
         circles.removeAll(absorbedCircles);
 
+        for (Circle circle : circles) {
+
+            if (circle.pendingMass > 0) {
+
+                circle.velocityX   = circle.pendingVelocityX / circle.pendingMass;
+                circle.velocityY   = circle.pendingVelocityY / circle.pendingMass;
+                circle.pendingMass = 0;
+
+            }
+
+        }
+
         //Move all the circles around in a fixed velocity and direction.
         for (Circle circle : circles) {
 
@@ -165,7 +177,7 @@ static class CircleAlchemy extends JPanel {
             circle.morphScaleY += (1.0 - circle.morphScaleY) * 0.1;
 
             //Same but with a glow.
-            circle.glowIntensity *= 0.9f;
+            circle.glowIntensity *= 0.98f;
 
         }
 
