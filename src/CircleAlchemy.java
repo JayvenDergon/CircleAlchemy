@@ -1,6 +1,7 @@
 import obj.Circle;
 import obj.Triangle;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -279,12 +280,49 @@ void main() {
     JFrame frame = new JFrame();
     frame.setUndecorated(true);
     frame.add(new CircleAlchemy());
+    frame.setTitle("Circle Alchemy");
+
+    try {
+
+        frame.setIconImage(ImageIO.read(new File("icon.png")));
+
+    } catch (IOException e) {
+
+        throw new RuntimeException(e);
+
+    }
+
+    final boolean[] isFullscreen = {true};
 
     frame.addKeyListener(new KeyAdapter() {
 
         public void keyPressed(KeyEvent e) {
 
             if (e.getKeyCode() == KeyEvent.VK_ESCAPE) System.exit(0);
+
+            if (e.getKeyCode() == KeyEvent.VK_F11) {
+
+                frame.dispose();
+                frame.setUndecorated(isFullscreen[0]);
+
+                if (isFullscreen[0]) {
+
+                    frame.setUndecorated(false);
+                    frame.setExtendedState(JFrame.NORMAL);
+                    frame.setSize(1280, 720);
+                    frame.setLocationRelativeTo(null);
+
+                } else {
+
+                    frame.setUndecorated(true);
+                    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+
+                }
+
+                isFullscreen[0] = !isFullscreen[0];
+                frame.setVisible(true);
+
+            }
 
         }
 
