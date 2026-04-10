@@ -79,7 +79,7 @@ public class Circle {
 
         }
 
-        Color randomColor = new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
+        Color randomColor = new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256), 200);
         Circle newCircle = new Circle(spawnX, spawnY, radius, velocityX, velocityY, randomColor);
         newCircle.isSpawning = fromEdge;
         circles.add(newCircle);
@@ -116,6 +116,7 @@ public class Circle {
     /**
      * Draws one circle (or if possibly, one of the toroidal ghosts) at the given screen position.
      * No rendering if outside the plane (For the ghosts in particular that are not within the plane yet).
+     * This is responsible for rendering
      */
     public static void drawCircle(int worldHeight, int worldWidth,
                                   Graphics2D g2, Circle c,
@@ -123,12 +124,22 @@ public class Circle {
 
         if (tx + c.radius < 0 || tx - c.radius > worldWidth || ty + c.radius < 0 || ty - c.radius > worldHeight) return;
 
+        //Heavy jitter when about to pop
         double jitterX = (c.popCountdown > 0) ? (Math.random() * 6) - 3 : 0;
         double jitterY = (c.popCountdown > 0) ? (Math.random() * 6) - 3 : 0;
+
+        //Make it jitter when it's close to popping size
+        if (c.radius > 40 && c.radius < 50) {
+
+            jitterX = (Math.random() * 1) - 0.5;
+            jitterY = (Math.random() * 1) - 0.5;
+
+        }
 
         AffineTransform savedTransform = g2.getTransform();
         g2.translate(tx + jitterX, ty + jitterY);
 
+        //Glow Handle
         if (c.glowIntensity > 0.01) {
 
             float glowRadius = (float) c.radius * 1.5f;
@@ -202,6 +213,10 @@ public class Circle {
 
         //Add consumed circle to Set that will be then removed.
         absorbedSet.add(consumed);
+        consumed.pendingMass      = 0;
+        consumed.pendingVelocityX = 0;
+        consumed.pendingVelocityY = 0;
+        consumed.baseMass         = -1;
 
     }
 
@@ -230,7 +245,7 @@ public class Circle {
             Circle circle = iterator.next();
 
             //If the circle is too large, start the timer.
-            if (!circle.isSplinter && circle.radius > 50 && circle.popCountdown == -1) {
+            if (!circle.isSplinter && circle.radius >= 50 && circle.popCountdown == -1) {
 
                 circle.popCountdown = 15;
 

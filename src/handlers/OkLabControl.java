@@ -48,7 +48,7 @@ public class OkLabControl {
         double A = 1.9779984951 * lCone - 2.4285922050 * mCone + 0.4505937099 * sCone;
         double B = 0.0259040371 * lCone + 0.7827717662 * mCone - 0.8086757660 * sCone;
 
-        return new double[]{L, A, B, 200};
+        return new double[]{L, A, B};
 
     }
 

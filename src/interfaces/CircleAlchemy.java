@@ -1,10 +1,10 @@
+package interfaces;
+
 import obj.Circle;
 import obj.Triangle;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.HashSet;
@@ -15,10 +15,10 @@ import static obj.Triangle.drawTriangle;
 /**
  * Balls
  * @author Feathers
- * @version 1.0.1
+ * @version 1.0.2
  */
 
-static class CircleAlchemy extends JPanel {
+public class CircleAlchemy extends JPanel {
 
     /**
      * This will list every active Circle in the map.
@@ -45,7 +45,9 @@ static class CircleAlchemy extends JPanel {
      */
     private final int worldHeight;
 
-    CircleAlchemy() {
+    public boolean isPaused = false;
+
+    public CircleAlchemy() {
 
         //Take the current screen's resolution and set it as the size of the map.
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
@@ -62,6 +64,7 @@ static class CircleAlchemy extends JPanel {
         //60 fps game loop.
         new Timer(16, _ -> {
 
+            if (isPaused) return;
             update();
             repaint();
 
@@ -272,64 +275,5 @@ static class CircleAlchemy extends JPanel {
         }
 
     }
-
-}
-
-void main() {
-
-    JFrame frame = new JFrame();
-    frame.setUndecorated(true);
-    frame.add(new CircleAlchemy());
-    frame.setTitle("Circle Alchemy");
-
-    try {
-
-        frame.setIconImage(ImageIO.read(new File("icon.png")));
-
-    } catch (IOException e) {
-
-        throw new RuntimeException(e);
-
-    }
-
-    final boolean[] isFullscreen = {true};
-
-    frame.addKeyListener(new KeyAdapter() {
-
-        public void keyPressed(KeyEvent e) {
-
-            if (e.getKeyCode() == KeyEvent.VK_ESCAPE) System.exit(0);
-
-            if (e.getKeyCode() == KeyEvent.VK_F11) {
-
-                frame.dispose();
-                frame.setUndecorated(isFullscreen[0]);
-
-                if (isFullscreen[0]) {
-
-                    frame.setUndecorated(false);
-                    frame.setExtendedState(JFrame.NORMAL);
-                    frame.setSize(1280, 720);
-                    frame.setLocationRelativeTo(null);
-
-                } else {
-
-                    frame.setUndecorated(true);
-                    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-
-                }
-
-                isFullscreen[0] = !isFullscreen[0];
-                frame.setVisible(true);
-
-            }
-
-        }
-
-    });
-
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-    frame.setVisible(true);
 
 }
