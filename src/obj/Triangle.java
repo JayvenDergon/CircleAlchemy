@@ -22,6 +22,9 @@ public class Triangle {
 
     }
 
+    /**
+    * Responsible for rendering triangles, it works more or less the same way it goes for Circles.
+    */
     public static void drawTriangle(Graphics2D g2, Triangle triangle, double tx, double ty, int worldWidth, int worldHeight) {
 
         if (tx + triangle.collisionRadius < 0 || tx - triangle.collisionRadius > worldWidth || ty + triangle.collisionRadius < 0 || ty - triangle.collisionRadius > worldHeight) return;
