@@ -22,16 +22,16 @@ public class Circle {
     public double velocityY; //Movement
 
     //Will be used for merging effects
-    public double morphScaleX      = 1;
-    public double morphScaleY      = 1;
-    public double drawAngle        = 0; //For a directional effect when merging
-    public float glowIntensity     = 0f; //Effects for merging
-    public int popCountdown        = -1;
-    public boolean isSpawning      = false; //For spawning logic (No toroidal wrapping when first spawning).
-    public double pendingVelocityX = 0;
-    public double pendingVelocityY = 0;
-    public double pendingMass      = 0;
-    public double baseMass         = 0;
+    public double  morphScaleX      = 1;
+    public double  morphScaleY      = 1;
+    public double  drawAngle        = 0; //For a directional effect when merging
+    public float   glowIntensity    = 0f; //Effects for merging
+    public int     popCountdown     = -1;
+    public boolean isSpawning       = false; //For spawning logic (No toroidal wrapping when first spawning).
+    public double  pendingVelocityX = 0;
+    public double  pendingVelocityY = 0;
+    public double  pendingMass      = 0;
+    public double  baseMass         = -1;
 
     public boolean isSplinter;
     public Color color; //Color of the circle.
@@ -120,19 +120,19 @@ public class Circle {
      */
     public static void drawCircle(int worldHeight, int worldWidth,
                                   Graphics2D g2, Circle c,
-                                  double tx, double ty) {
+                                  double tx, double ty, Random random) {
 
         if (tx + c.radius < 0 || tx - c.radius > worldWidth || ty + c.radius < 0 || ty - c.radius > worldHeight) return;
 
         //Heavy jitter when about to pop
-        double jitterX = (c.popCountdown > 0) ? (Math.random() * 6) - 3 : 0;
-        double jitterY = (c.popCountdown > 0) ? (Math.random() * 6) - 3 : 0;
+        double jitterX = (c.popCountdown > 0) ? random.nextInt(7) - 3 : 0;
+        double jitterY = (c.popCountdown > 0) ? random.nextInt(7) - 3 : 0;
 
         //Make it jitter when it's close to popping size
         if (c.radius > 40 && c.radius < 50) {
 
-            jitterX = (Math.random() * 1) - 0.5;
-            jitterY = (Math.random() * 1) - 0.5;
+            jitterX = random.nextInt(2) - 0.5;
+            jitterY = random.nextInt(2) - 0.5;
 
         }
 
