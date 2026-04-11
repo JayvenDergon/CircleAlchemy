@@ -13,7 +13,6 @@ void main() {
 
     JFrame frame = new JFrame();
     frame.setUndecorated(true);
-    frame.add(game);
     frame.setTitle("Circle Alchemy");
 
     pauseMenu[0] = new PauseMenu(game);
@@ -61,7 +60,6 @@ void main() {
         public void actionPerformed(ActionEvent e) {
 
             frame.dispose();
-            frame.setUndecorated(isFullscreen[0]);
 
             if (isFullscreen[0]) {
 

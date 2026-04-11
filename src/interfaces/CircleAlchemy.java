@@ -1,14 +1,18 @@
 package interfaces;
 
+import handlers.Explosion;
 import obj.Circle;
 import obj.Triangle;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.HashSet;
 
+import static handlers.Explosion.drawExplosion;
 import static obj.Circle.*;
 import static obj.Triangle.drawTriangle;
 
@@ -31,6 +35,21 @@ public class CircleAlchemy extends JPanel {
     private final ArrayList<Triangle> triangles = new ArrayList<>();
 
     /**
+     * This will list the explosion object in the map.
+     */
+    private final ArrayList<Explosion> explosions = new ArrayList<>();
+
+    /**
+     * This will list the debris of said explosion in the map.
+     */
+    private final ArrayList<Explosion.ExplosionParticle> debrisParticles = new ArrayList<>();
+
+    /**
+     * This will list the timers for when the triangles respawn
+     */
+    private final ArrayList<Triangle.RespawnTimer>     triangleRespawnQueue = new ArrayList<>();
+
+    /**
      * This will be used for RNG.
      */
     private final Random random = new Random();
@@ -45,7 +64,15 @@ public class CircleAlchemy extends JPanel {
      */
     private final int worldHeight;
 
+    /**
+     * Boolean for the pause menu (Freezes the game when paused)
+     */
     public boolean isPaused = false;
+
+    /**
+     * Screen flash whenever an explosion occurs
+     */
+    private int screenFlashFrames = 0;
 
     public CircleAlchemy() {
 
@@ -76,6 +103,47 @@ public class CircleAlchemy extends JPanel {
 
         HashSet<Circle>   absorbedCircles = new HashSet<>();
         ArrayList<Circle> newSplinters    = new ArrayList<>();
+
+        //Handle interaction between triangles
+        for (int i = 0; i < triangles.size(); i++) {
+
+            for (int j = i + 1; j < triangles.size(); j++) {
+
+                Triangle tA         = triangles.get(i);
+                Triangle tB         = triangles.get(j);
+                double deltaX       = wrappedDelta(tB.posX, tA.posX, worldWidth);
+                double deltaY       = wrappedDelta(tB.posY, tA.posY, worldHeight);
+                double minTouchDist = tA.collisionRadius + tB.collisionRadius;
+
+                if (deltaX * deltaX + deltaY * deltaY < minTouchDist * minTouchDist) {
+
+                    explosions.add(new Explosion(tA.posX, tA.posY, false));
+                    screenFlashFrames = 10;
+
+                    for (int k = 0; k < 60; k++) {
+
+                        double particleAngle = random.nextDouble() * Math.PI * 2;
+                        double particleSpeed = 3 + random.nextDouble() * 9;
+
+                        Color  fireColor = new Color(200 + random.nextInt(55),
+                                100 + random.nextInt(100),
+                                random.nextInt(80), 220);
+
+                        debrisParticles.add(new Explosion.ExplosionParticle(tA.posX, tA.posY, particleAngle, particleSpeed, fireColor));
+
+                    }
+
+                    triangleRespawnQueue.add(new Triangle.RespawnTimer(180));
+                    triangleRespawnQueue.add(new Triangle.RespawnTimer(180));
+                    triangles.remove(j);
+                    triangles.remove(i);
+                    break;
+
+                }
+
+            }
+
+        }
 
         //Triangles with their respective logic
         for (Triangle triangle : triangles) {
@@ -185,6 +253,59 @@ public class CircleAlchemy extends JPanel {
 
         }
 
+        //Iterates the explosion logic
+        Iterator<Explosion> explosionIterator = explosions.iterator();
+        screenFlashFrames = Math.max(0, screenFlashFrames - 1);
+
+        while (explosionIterator.hasNext()) {
+
+            Explosion explosion = explosionIterator.next();
+            explosion.lifeFrames--;
+            double killRadius = explosion.outerRadius();
+
+            for (Circle circle : circles) {
+
+                if (circle.isSplinter || circle.popCountdown >= 0) continue;
+
+                double deltaX = wrappedDelta(explosion.posX, circle.posX, worldWidth);
+                double deltaY = wrappedDelta(explosion.posY, circle.posY, worldHeight);
+
+                if (deltaX * deltaX + deltaY * deltaY < killRadius * killRadius) circle.popCountdown = 0;
+
+            }
+
+            if (explosion.lifeFrames <= 0) explosionIterator.remove();
+        }
+
+        Iterator<Explosion.ExplosionParticle> particleIterator = debrisParticles.iterator();
+        while (particleIterator.hasNext()) {
+
+            Explosion.ExplosionParticle particle = particleIterator.next();
+            particle.posX      += particle.velocityX;
+            particle.posY      += particle.velocityY;
+            particle.velocityX *= 0.93;
+            particle.velocityY *= 0.93;
+            particle.lifeFrames--;
+            if (particle.lifeFrames <= 0) particleIterator.remove();
+
+        }
+
+        //Handle the respawning for triangles
+        Iterator<Triangle.RespawnTimer> respawnIterator = triangleRespawnQueue.iterator();
+        while (respawnIterator.hasNext()) {
+
+            Triangle.RespawnTimer timer = respawnIterator.next();
+            timer.framesRemaining--;
+
+            if (timer.framesRemaining <= 0) {
+
+                triangles.add(new Triangle(random.nextInt(worldWidth), random.nextInt(worldHeight)));
+                respawnIterator.remove();
+
+            }
+
+        }
+
         //This will make it so when a circle gets too big, it'll pop into a bunch of splinter circles.
         handleCirclePops(circles, random, newSplinters);
         circles.addAll(newSplinters);
@@ -221,7 +342,7 @@ public class CircleAlchemy extends JPanel {
 
             if (circle.isSpawning) {
 
-                drawCircle(worldHeight, worldWidth, g2, circle, circle.posX, circle.posY);
+                drawCircle(worldHeight, worldWidth, g2, circle, circle.posX, circle.posY, random);
 
             } else {
 
@@ -230,7 +351,7 @@ public class CircleAlchemy extends JPanel {
                     for (int yOffset = -1; yOffset <= 1; yOffset++)
                         drawCircle(worldHeight, worldWidth, g2, circle,
                                 circle.posX + xOffset * worldWidth,
-                                circle.posY + yOffset * worldHeight);
+                                circle.posY + yOffset * worldHeight, random);
 
             }
 
@@ -246,6 +367,16 @@ public class CircleAlchemy extends JPanel {
                             triangle.posX + xOffset * worldWidth,
                             triangle.posY + yOffset * worldHeight,
                             worldWidth, worldHeight);
+
+        }
+
+        for (Explosion boom : explosions) drawExplosion(g2, boom);
+        drawDebrisParticles(g2);
+
+        if (screenFlashFrames > 0) {
+
+            g2.setColor(new Color(255, 220, 150, (int) (180 * (screenFlashFrames / 10.0f))));
+            g2.fillRect(0, 0, getWidth(), getHeight());
 
         }
 
@@ -271,6 +402,20 @@ public class CircleAlchemy extends JPanel {
                 splinter.velocityY += (deltaY / dist) * (other.radius * 0.25 / dist);
 
             }
+
+        }
+
+    }
+
+
+    private void drawDebrisParticles(Graphics2D g2) {
+
+        for (Explosion.ExplosionParticle p : debrisParticles) {
+
+            float lf = p.lifeFrames / (float)p.maxLifeFrames;
+            g2.setColor(new Color(p.color.getRed(), p.color.getGreen(), p.color.getBlue(), (int) (255 * lf * lf)));
+            double s = p.drawRadius * lf;
+            g2.fill(new Ellipse2D.Double(p.posX - s, p.posY - s, s * 2, s * 2));
 
         }
 

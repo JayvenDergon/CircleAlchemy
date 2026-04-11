@@ -47,4 +47,16 @@ public class Triangle {
 
     }
 
+    public static class RespawnTimer {
+
+        public int framesRemaining;
+
+        public RespawnTimer(int initialFrames) {
+
+            this.framesRemaining = initialFrames;
+
+        }
+
+    }
+
 }
